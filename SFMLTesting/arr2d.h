@@ -19,7 +19,7 @@ public:
 		return this->vec[index];
 	}
 
-	T get_value(int row, int column) const
+	T& get_value(int row, int column)
 	{
 		return this->vec[row][column];
 	}

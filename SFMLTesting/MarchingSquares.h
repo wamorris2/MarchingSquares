@@ -21,6 +21,10 @@ private:
 	int width, height, cellsize;
 	std::shared_ptr<arr2d<float>> field;
 
+	bool drawPoints;
+	bool drawLines;
+	bool drawFill;
+
 	void initVariables();
 	void initWindow();
 	void pollEvents();
