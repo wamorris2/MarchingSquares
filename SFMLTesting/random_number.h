@@ -32,7 +32,7 @@ static float random_float_in_range(float min, float max)
 
 static float random_float()
 {
-	std::exponential_distribution<float> dist(1.0f);
+	std::uniform_real_distribution<float> dist(0.0, 2.0);
 	return dist(rnd);
 }
 

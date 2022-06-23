@@ -14,6 +14,7 @@
 
 class MarchingSquares {
 private:
+	sf::ContextSettings settings;
 	std::unique_ptr<sf::RenderWindow> window;
 	sf::VideoMode videoMode;
 	sf::Event ev;
