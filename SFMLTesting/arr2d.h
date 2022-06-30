@@ -11,7 +11,7 @@ private:
 public:
 	arr2d(const int rows, const int columns) : rows(rows), columns(columns)
 	{
-		this->vec = std::vector<std::vector<T>>(rows, std::vector<T>(columns));
+		this->vec = std::vector<std::vector<T>>(rows, std::vector<T>(columns, 0.0f));
 	}
 
 	std::vector<T>& operator[](int index) {

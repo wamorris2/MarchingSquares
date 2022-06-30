@@ -9,6 +9,7 @@
 #include <SFML/Window.hpp>
 
 #include "arr2d.h"
+#include "blob.h"
 #include "random_number.h"
 
 
@@ -19,24 +20,32 @@ private:
 	sf::VideoMode videoMode;
 	sf::Event ev;
 	sf::Clock clock;
+	float deltaTime;
+	bool paused;
+
 	int width, height, cellsize;
+	void calculateFieldValues();
 	std::shared_ptr<arr2d<float>> field;
+
+	float intensity;
+	void moveBlobs();
+	std::vector<blob> blobs;
 
 	bool drawPoints;
 	bool drawLines;
 	bool drawFill;
+	bool drawBlobs;
 
 	void initVariables();
 	void initWindow();
 	void pollEvents();
 	void handleCollisions();
-	float deltaTime();
 	sf::Vector2f linearInterpolation(sf::Vector2f a, sf::Vector2f b);
 
 public:
 	MarchingSquares();
 
-	bool running();
+	inline bool running() { return this->window->isOpen(); }
 	void update();
 	void render();
 };

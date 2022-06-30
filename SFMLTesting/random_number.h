@@ -30,9 +30,15 @@ static float random_float_in_range(float min, float max)
 	return dist(rnd);
 }
 
-static float random_float()
+static float random_float_exp()
 {
-	std::uniform_real_distribution<float> dist(0.0, 2.0);
+	std::exponential_distribution<float> dist(1.0);
+	return dist(rnd);
+}
+
+static float random_float_uni()
+{
+	std::uniform_real_distribution<float> dist(0.0, 1.0);
 	return dist(rnd);
 }
 
