@@ -134,10 +134,10 @@
   <ItemGroup>
     <ClInclude Include="arr2d.h" />
     <ClInclude Include="blob.h" />
+    <ClInclude Include="button.h" />
     <ClInclude Include="random_number.h" />
-    <ClInclude Include="constants.h" />
     <ClInclude Include="MarchingSquares.h" />
-    <ClInclude Include="utils.h" />
+    <ClInclude Include="options.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

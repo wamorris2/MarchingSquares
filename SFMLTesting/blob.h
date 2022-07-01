@@ -10,6 +10,7 @@ public:
 	sf::Vector2f velocity;
 
 	blob(float radius, sf::Vector2f position, sf::Vector2f velocity) : radius(radius), position(position), velocity(velocity) {}
+	blob() : radius(50.0f), position(sf::Vector2f()), velocity(sf::Vector2f()) {};
 };
 
 #endif

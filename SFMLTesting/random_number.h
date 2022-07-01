@@ -42,13 +42,6 @@ static float random_float_uni()
 	return dist(rnd);
 }
 
-static sf::Vector2f random_direction(float magnitude = 1.0f)
-{
-
-	float num = random_float_in_range(0.0, 2 * PI);
-	return magnitude * sf::Vector2f(sin(num), cos(num));
-}
-
 static sf::Vector2f random_position(int width, int height)
 {
 	float x = random_float_in_range(0.0f, width * 1.0f);
