@@ -11,6 +11,7 @@
 #include "arr2d.h"
 #include "blob.h"
 #include "random_number.h"
+#include "utils.h"
 
 
 class MarchingSquares {
@@ -28,7 +29,7 @@ private:
 	std::shared_ptr<arr2d<float>> field;
 
 	float intensity;
-	void moveBlobs();
+	float criticalValue;
 	std::vector<blob> blobs;
 
 	bool drawPoints;

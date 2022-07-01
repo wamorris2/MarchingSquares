@@ -137,6 +137,7 @@
     <ClInclude Include="random_number.h" />
     <ClInclude Include="constants.h" />
     <ClInclude Include="MarchingSquares.h" />
+    <ClInclude Include="utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

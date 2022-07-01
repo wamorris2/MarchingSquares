@@ -1,6 +1,11 @@
 #include "MarchingSquares.h"
 #include <iostream>
 
+float distance(sf::Vector2f a, sf::Vector2f b)
+{
+	return (float)sqrt(pow(b.x - a.x, 2) + pow(b.y - a.y, 2));
+}
+
 void MarchingSquares::initVariables()
 {
 	this->width = 802;
@@ -9,15 +14,17 @@ void MarchingSquares::initVariables()
 	this->cellsize = 5;
 
 	this->intensity = 50.0f;
-	float max_speed = 200.0f;
+	this->criticalValue = 1.0f;
+	float max_speed = 30.0f;
 	this->blobs = { blob(50.0f, sf::Vector2f(random_float_uni() * width, random_float_uni() * height), sf::Vector2f(random_float_uni() * max_speed - max_speed / 2, random_float_uni() * max_speed - max_speed / 2)),
 					blob(50.0f, sf::Vector2f(random_float_uni() * width, random_float_uni() * height), sf::Vector2f(random_float_uni() * max_speed - max_speed / 2, random_float_uni() * max_speed - max_speed / 2)),
 					blob(50.0f, sf::Vector2f(random_float_uni() * width, random_float_uni() * height), sf::Vector2f(random_float_uni() * max_speed - max_speed / 2, random_float_uni() * max_speed - max_speed / 2)) };
 	this->field = std::make_shared<arr2d<float>>(width / cellsize + 1, height / cellsize + 1);
+	this->calculateFieldValues();
 	
-	this->drawPoints = true;
-	this->drawLines = false;
-	this->drawFill = true;
+	this->drawPoints = false;
+	this->drawLines = true;
+	this->drawFill = false;
 	this->drawBlobs = false;
 
 	this->paused = false;
@@ -51,7 +58,16 @@ void MarchingSquares::pollEvents()
 			case sf::Keyboard::D:
 				if (paused)
 				{
-					this->moveBlobs();
+					this->handleCollisions();
+					for (blob& b : blobs) b.position += b.velocity * this->deltaTime; // move every blob
+					this->calculateFieldValues();
+				}
+				break;
+			case sf::Keyboard::A:
+				if (paused)
+				{
+					this->handleCollisions();
+					for (blob& b : this->blobs) b.position += -b.velocity * this->deltaTime; // move every blob back
 					this->calculateFieldValues();
 				}
 				break;
@@ -90,16 +106,13 @@ void MarchingSquares::handleCollisions()
 	}
 }
 
-float distance(sf::Vector2f a, sf::Vector2f b)
-{
-	return (float)sqrt(pow(b.x - a.x, 2) + pow(b.y - a.y, 2));
-}
-
 sf::Vector2f MarchingSquares::linearInterpolation(sf::Vector2f a, sf::Vector2f b)
 {
-
+	float fa = this->field->get_value((int)(a.x / cellsize), (int)(a.y / cellsize));
 	float fb = this->field->get_value((int)(b.x / cellsize), (int)(b.y / cellsize));
-	float sum = this->field->get_value((int)(a.x / cellsize), (int)(a.y / cellsize)) + fb;
+	if ((fa >= this->criticalValue && fb >= this->criticalValue) || (fa < this->criticalValue && fb < this->criticalValue))
+		return sf::Vector2f(-1.0f, -1.0f);
+	float sum = fa + fb;
 	float ratio = fb / sum;
 
 	return ratio * (b - a) + a;
@@ -109,11 +122,6 @@ MarchingSquares::MarchingSquares()
 {
 	this->initVariables();
 	this->initWindow();
-}
-
-void MarchingSquares::moveBlobs()
-{
-	for (blob& b : blobs) b.position += b.velocity * this->deltaTime; // move every blob
 }
 
 void MarchingSquares::calculateFieldValues()
@@ -130,13 +138,14 @@ void MarchingSquares::calculateFieldValues()
 			}
 		}
 }
+
 void MarchingSquares::update()
 {
 	this->pollEvents();
-	this->handleCollisions();
 	if (paused)
 		return;
-	this->moveBlobs();
+	this->handleCollisions();
+	for (blob& b : blobs) b.position += b.velocity * this->deltaTime; // move every blob
 	this->calculateFieldValues();
 }
 
@@ -159,14 +168,13 @@ void MarchingSquares::render()
 				sf::Vector2i p = points[k], p2 = points[(k + 1) % 4];
 				sf::Vector2f p_pos((float)(p.x * this->cellsize), (float)(p.y * this->cellsize)), p2_pos((float)(p2.x * this->cellsize), (float)(p2.y * this->cellsize));
 				float f = this->field->get_value(p.x, p.y), f2 = this->field->get_value(p2.x, p2.y);
-
-				if (f >= 1.0f)
+				if (f >= this->criticalValue)
 				{
 					fillZone[vertex].position = p_pos;
 					fillZone[vertex].color = sf::Color::White;
 					vertex++;
 
-					if (f2 < 1.0f)
+					if (f2 < this->criticalValue)
 					{
 						sf::Vector2f linInter = linearInterpolation(p_pos, p2_pos);
 						fillZone[vertex].position = linInter;
@@ -174,7 +182,7 @@ void MarchingSquares::render()
 						vertex++;
 					}
 				}
-				else if (f2 >= 1.0f)
+				else if (f2 >= this->criticalValue)
 				{
 					sf::Vector2f linInter = linearInterpolation(p_pos, p2_pos);
 					fillZone[vertex].position = linInter;
@@ -186,7 +194,41 @@ void MarchingSquares::render()
 			}
 			if (drawLines)
 			{
+			std::vector<sf::Vector2i> points = { sf::Vector2i(i, j), sf::Vector2i(i, j + 1), sf::Vector2i(i + 1, j + 1), sf::Vector2i(i + 1, j) };
+			sf::VertexArray lines(sf::Lines, 4);
+			sf::Uint8 start = 0, end = 1;
+			for (int k = 0; k < 4; ++k)
+			{
+				sf::Vector2i p = points[k], p2 = points[(k + 1) % 4];
+				sf::Vector2f p_pos((float)(p.x * this->cellsize), (float)(p.y * this->cellsize)), p2_pos((float)(p2.x * this->cellsize), (float)(p2.y * this->cellsize));
+				float f = this->field->get_value(p.x, p.y), f2 = this->field->get_value(p2.x, p2.y);
+				sf::Vector2f linInter = linearInterpolation(p_pos, p2_pos);
+				if (f >= this->criticalValue && f2 < this->criticalValue) // inside -> outside
+				{
+					lines[end].color = sf::Color::White;
+					lines[end].position = linInter;
+					end += 2;
+				}
+				else if (f < this->criticalValue && f2 >= this->criticalValue) // outside -> inside
+				{
+					if (start == 2)
+					{
+						auto temp = lines[end].position;
+						lines[end].position = lines[1].position;
+						lines[1].position = temp;
+					}
+					lines[start].color = sf::Color::White;
+					lines[start].position = linInter;
+					start += 2;
+				}
 				
+			}
+
+			this->window->draw(lines);
+			/*sf::Uint8 state = ((this->field->get_value(i, j) >= 1.0f) * 1 +
+				(this->field->get_value(i, j + 1) >= 1.0f) * 2 +
+				(this->field->get_value(i + 1, j + 1) >= 1.0f) * 4 +
+				(this->field->get_value(i + 1, j) >= 1.0f) * 8);*/
 			}
 		}
 	}
@@ -199,7 +241,7 @@ void MarchingSquares::render()
 	{
 		for (int j = 0; j < this->field->columns; j++)
 		{
-			if (this->field->get_value(i, j) >= 1.0)
+			if (this->field->get_value(i, j) >= this->criticalValue)
 				circ.setFillColor(sf::Color::Green);
 			else
 				circ.setFillColor(sf::Color::Red);
