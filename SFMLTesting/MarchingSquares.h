@@ -16,14 +16,17 @@
 
 class MarchingSquares {
 private:
-
+	int width, height, optionsWidth;
 	sf::ContextSettings settings;
 	std::unique_ptr<sf::RenderWindow> window;
 	sf::VideoMode videoMode;
 	sf::Event ev;
 	sf::Clock clock;
 	float deltaTime;
+	bool paused;
 
+	Menu menu;
+	void resetField();
 	void calculateFieldValues();
 	std::shared_ptr<arr2d<float>> field;
 

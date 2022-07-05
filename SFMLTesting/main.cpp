@@ -2,6 +2,7 @@
 
 int main()
 {
+
 	MarchingSquares ms;
 
 	while (ms.running())
